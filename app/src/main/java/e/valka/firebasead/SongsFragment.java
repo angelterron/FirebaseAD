@@ -21,14 +21,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class SongsFragment extends Fragment {
-    FirebaseDatabase database;
-    RecyclerView recycler;
+    ArrayList<Song> songs;
+    void setArray(ArrayList<Song> songs){
+        this.songs = songs;
+    }
     @Override
     public View onCreateView (@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        database = FirebaseDatabase.getInstance ();
         return inflater.inflate (R.layout.list, container, false);
     }
 
@@ -37,10 +39,10 @@ public class SongsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         FragmentActivity activity = getActivity ();
         if(activity==null)return;
-        recycler = activity.findViewById(R.id.recycler);
-        ArrayList<Song> songs = fetchData();
-        recycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+        RecyclerView recycler = activity.findViewById(R.id.recycler);
+        recycler.setLayoutManager(new LinearLayoutManager(activity));
         recycler.setAdapter(new SongsAdapter(getContext(),songs));
+
 
     }
     class SongsAdapter extends RecyclerView.Adapter<ListadoViewHolder>{
@@ -87,30 +89,5 @@ public class SongsFragment extends Fragment {
             textView3.setText(album);
         }
     }
-    private ArrayList<Song> fetchData () {
-        ArrayList<Song> songsList = new ArrayList<>();
-        DatabaseReference root = database.getReference ();
-        DatabaseReference songs = root.child ("songs");
 
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange (@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot item: dataSnapshot.getChildren ()) {
-                    Song s = item.getValue (Song.class);
-                    Log.w ("PKAT",""+item.getValue());
-                    songsList.add(s);
-
-                }
-            }
-
-            @Override
-            public void onCancelled (@NonNull DatabaseError databaseError) {
-                Log.w ("PKAT", databaseError.toException ());
-            }
-
-        };
-
-        songs.addListenerForSingleValueEvent (valueEventListener);
-        return songsList;
-    }
 }
